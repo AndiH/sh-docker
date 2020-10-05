@@ -1,0 +1,16 @@
+version: '3'
+services:
+  homeassistant:
+    container_name: home-assistant
+    image: homeassistant/home-assistant:stable
+    volumes:
+      - /home/pi/.homeassistant/:/config
+      - /home/pi/bin/:/pi-bin/
+      - /home/pi/.ssh/:/root/.ssh/:ro
+    environment:
+      - TZ=Europe/Berlin
+    restart: always
+    network_mode: host
+#    ports:
+#      - "1883:1883"
+#      - "9001:9001"
