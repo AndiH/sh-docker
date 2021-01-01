@@ -1,0 +1,4 @@
+myCA.*
+bitwarden.*
+secrets.env
+data/*

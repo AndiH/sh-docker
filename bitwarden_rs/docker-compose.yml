@@ -1,0 +1,50 @@
+version: '3'
+
+services:
+  bitwarden:
+    image: bitwardenrs/server:latest-arm32v6 #swap tag to raspberry to run on a raspberry pi
+#    ports:
+#      - "13880:80"
+    expose:
+      - "80"
+    volumes:
+      - ./data/bitwarden:/data
+    restart: on-failure
+    environment:
+      WEBSOCKET_ENABLED: 'true'
+      SIGNUPS_ALLOWED: 'true'
+      INVITATIONS_ALLOWED: 'true'
+    env_file:
+      - ./secrets.env
+ 
+  nginx:
+    image: nginx:1.15-alpine
+    ports:
+      - "10880:80"
+      - "10443:443"
+    volumes:
+      - ./data/nginx:/etc/nginx
+      - ./data/ssl:/etc/ssl
+
+  bw_backup:
+    image: bruceforce/bw_backup:latest-rpi3 #swap tag to rpi3 to run on a raspberry pi
+    container_name: bw_backup
+    restart: on-failure
+    depends_on:
+      - bitwarden
+    volumes:
+      - ./data/bitwarden:/data
+      - /etc/timezone:/etc/timezone:ro
+      - /etc/localtime:/etc/localtime:ro
+        # uncomment this if you want your backup to be written to ./data/bitwarden folder"
+        # - ./data/bitwarden:/backup_folder/
+    environment:
+      - DB_FILE=/data/db.sqlite3
+        # uncomment this if you want your backup to be written to ./data/bitwarden folder"
+        # - BACKUP_FILE=/backup_folder/db_backup/backup.sqlite3
+      - BACKUP_FILE=/data/db_backup/backup.sqlite3
+      - CRON_TIME=0 5 * * *
+      - TIMESTAMP=false
+      - UID=0
+      - GID=0
+
